@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="home-page">
     <div class="container-fluid">
       <el-row class="spannel_list" :gutter="10">
         <el-col :sm="6" :xs="12">
@@ -347,8 +347,16 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.home-page {
+  min-width: 0;
+}
+
+.container-fluid {
+  width: 100%;
+}
+
 .spannel_list {
-  margin-top: 20px;
+  margin-top: 0;
 }
 
 .spannel {
@@ -417,5 +425,12 @@ export default {
   height: 400px;
   border: 1px solid #e7e7e9;
   background-color: #fff !important;
+}
+
+@media (max-width: 768px) {
+  .gragh_pannel,
+  .column_pannel {
+    height: 320px;
+  }
 }
 </style>

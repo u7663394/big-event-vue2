@@ -29,16 +29,18 @@
           unique-opened
           router
         >
-           <!-- 不包含子菜单的“一级菜单” -->
-           <el-menu-item style="padding-left:35px;font-size:15px" >
-             <i class="el-icon-s-home"></i>
+          <el-menu-item index="/home" style="padding-left:35px;font-size:15px">
+            <i class="el-icon-s-home"></i>
             <span>首页</span>
-           </el-menu-item>
-
-            <!-- 包含子菜单的“一级菜单” -->
-
-             <!-- 循环渲染“二级菜单” -->
-
+          </el-menu-item>
+          <el-menu-item index="/article" style="padding-left:35px;font-size:15px">
+            <i class="el-icon-document"></i>
+            <span>文章管理</span>
+          </el-menu-item>
+          <el-menu-item index="/user" style="padding-left:35px;font-size:15px">
+            <i class="el-icon-user"></i>
+            <span>用户管理</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -76,22 +78,29 @@ export default {
 
 <style lang="less" scoped>
 .main-container {
-  height: 100%;
+  height: 100vh;
   .el-header,
   .el-aside {
     background-color: #23262e;
   }
   .el-header {
+    height: 60px !important;
     padding: 0;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+  }
+  .el-container {
+    min-height: 0;
   }
   .el-main {
-    overflow-y: scroll;
+    overflow-y: auto;
     height: 0;
+    padding: 20px;
     background-color: #f2f2f2;
   }
   .el-footer {
+    height: 40px !important;
     background-color: #eee;
     font-size: 12px;
     display: flex;
@@ -134,6 +143,7 @@ export default {
 
 // 侧边栏菜单的样式
 .el-aside {
+  overflow: hidden;
   .el-submenu,
   .el-menu-item {
     width: 200px;

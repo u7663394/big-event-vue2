@@ -86,7 +86,7 @@ export default {
         const res = await login(this.formModel)
         setToken(res.token)
         this.$message.success('登录成功')
-        this.$router.push('/')
+        this.$router.push('/home')
       } catch (error) {
         if (error) {
           console.log(error)
