@@ -13,7 +13,7 @@ const normalizeToken = (token) => {
     return ''
   }
 
-  return normalizedToken
+  return normalizedToken.replace(/^Bearer\s+/i, '').trim()
 }
 
 // 1. 获取 token

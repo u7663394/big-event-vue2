@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import LayoutPage from '@/views/layout/index.vue'
 import ArticlePage from '@/views/article/index.vue'
 import ArticleCatePage from '@/views/article/cate.vue'
+import ArticleEditPage from '@/views/article/edit.vue'
 import ArticleListPage from '@/views/article/list.vue'
 import HomePage from '@/views/home/index.vue'
 import LoginPage from '@/views/login/index.vue'
@@ -38,6 +39,10 @@ const router = new VueRouter({
             {
               path: 'list',
               component: ArticleListPage
+            },
+            {
+              path: 'edit/:id?',
+              component: ArticleEditPage
             }
           ]
         },
