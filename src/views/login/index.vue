@@ -50,6 +50,9 @@
 </template>
 
 <script>
+import { login } from '@/api/user'
+import { setToken } from '@/utils/storage'
+
 export default {
   name: 'LoginPage',
   data () {
@@ -80,7 +83,8 @@ export default {
       try {
         await this.$refs.form.validate()
         this.loading = true
-        await this.$store.dispatch('user/loginAction', this.formModel)
+        const res = await login(this.formModel)
+        setToken(res.token)
         this.$message.success('登录成功')
         this.$router.push('/')
       } catch (error) {

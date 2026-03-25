@@ -59,6 +59,8 @@
 </template>
 
 <script>
+import { register } from '@/api/user'
+
 export default {
   name: 'RegisterPage',
   data () {
@@ -104,7 +106,7 @@ export default {
       try {
         await this.$refs.form.validate()
         this.loading = true
-        await this.$store.dispatch('user/registerAction', this.formModel)
+        await register(this.formModel)
         this.$message.success('注册成功')
         this.$router.push({
           path: '/login',

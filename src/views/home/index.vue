@@ -9,11 +9,13 @@
 </template>
 
 <script>
+import { delToken } from '@/utils/storage'
+
 export default {
   name: 'HomePage',
   methods: {
     logout () {
-      this.$store.commit('user/logout')
+      delToken()
       this.$message.success('已退出登录')
       this.$router.push('/login')
     }

@@ -1,8 +1,8 @@
 // 封装请求模块
 import axios from 'axios'
-import store from '@/store'
 import router from '@/router'
 import { Message } from 'element-ui'
+import { delToken, getToken } from './storage'
 
 // 1. 创建 axios 实例
 const request = axios.create({
@@ -14,7 +14,7 @@ const request = axios.create({
 request.interceptors.request.use(
   function (config) {
     // 统一携带 token
-    const token = store.state.user.token
+    const token = getToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -37,7 +37,7 @@ request.interceptors.response.use(
       if (error.response.status === 401) {
         Message.error('当前登陆状态过期, 请重新登陆')
         // 清除 token + 跳转登陆页
-        store.commit('user/logout')
+        delToken()
         router.push('/login')
       } else {
         // 2. 其余错误

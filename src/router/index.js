@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
 import HomePage from '@/views/home/index.vue'
 import LoginPage from '@/views/login/index.vue'
 import RegisterPage from '@/views/register/index.vue'
+import { getToken } from '@/utils/storage'
 
 Vue.use(VueRouter)
 
@@ -28,7 +28,7 @@ const router = new VueRouter({
 const whiteList = ['/login', '/register']
 router.beforeEach((to, from, next) => {
   // 1. 有 token 就放行
-  const token = store.state.user.token
+  const token = getToken()
   if (token) return next()
   // 2. 去白名单也放行
   if (whiteList.includes(to.path)) return next()
