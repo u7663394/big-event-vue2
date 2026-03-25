@@ -17,19 +17,20 @@
         <!-- 登录表单 -->
         <el-form
           :model="formModel"
+          :rules="rules"
           label-position="top"
           class="login-form"
           @submit.native.prevent
           ref="form"
         >
-          <el-form-item label="用户名" class="login-form_item">
+          <el-form-item label="用户名" class="login-form_item" prop="username">
             <el-input
               v-model="formModel.username"
               placeholder="请输入用户名"
               autocomplete="off"
             />
           </el-form-item>
-          <el-form-item label="密码" class="login-form_item">
+          <el-form-item label="密码" class="login-form_item" prop="password">
             <el-input
               v-model="formModel.password"
               placeholder="请输入密码"
@@ -38,7 +39,7 @@
             />
           </el-form-item>
           <el-form-item class="login-form_action">
-            <el-button class="submit-btn" type="primary" @click="login">
+            <el-button class="submit-btn" type="primary" :loading="loading" @click="login">
               登录
             </el-button>
           </el-form-item>
@@ -56,27 +57,38 @@ export default {
       formModel: {
         username: '',
         password: ''
+      },
+      loading: false,
+      rules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ]
       }
     }
+  },
+  created () {
+    this.formModel.username = this.$route.query.username || ''
   },
   methods: {
     goRegister () {
       this.$router.push('/register')
     },
-    methods: {
-      async login () {
-        // 1. 登陆时先校验
-        const myForm = this.$refs.form
-        try {
-          await myForm.validate()
-          // 2. 通过则调用 vuex 中的 action
-          await this.$store.dispatch('user/loginAction', this.form)
-          // 3. 成功提示 + 跳转首页
-          this.$message.success('登陆成功')
-          this.$router.push('/')
-        } catch (error) {
+    async login () {
+      try {
+        await this.$refs.form.validate()
+        this.loading = true
+        await this.$store.dispatch('user/loginAction', this.formModel)
+        this.$message.success('登录成功')
+        this.$router.push('/')
+      } catch (error) {
+        if (error) {
           console.log(error)
         }
+      } finally {
+        this.loading = false
       }
     }
   }

@@ -17,11 +17,13 @@
         <!-- 注册表单 -->
         <el-form
           :model="formModel"
+          :rules="rules"
           label-position="top"
           class="register-form"
           @submit.native.prevent
+          ref="form"
         >
-          <el-form-item label="用户名" class="register-form_item">
+          <el-form-item label="用户名" class="register-form_item" prop="username">
             <el-input
               v-model="formModel.username"
               placeholder="请输入用户名"
@@ -29,7 +31,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="密码" class="register-form_item">
+          <el-form-item label="密码" class="register-form_item" prop="password">
             <el-input
               v-model="formModel.password"
               placeholder="请输入密码"
@@ -37,7 +39,7 @@
               autocomplete="off"
             />
           </el-form-item>
-          <el-form-item label="密码" class="register-form_item">
+          <el-form-item label="确认密码" class="register-form_item" prop="repassword">
             <el-input
               v-model="formModel.repassword"
               placeholder="请再次输入密码"
@@ -46,7 +48,7 @@
             />
           </el-form-item>
           <el-form-item class="register-form_action">
-            <el-button class="submit-btn" type="primary">
+            <el-button class="submit-btn" type="primary" :loading="loading" @click="register">
               注册
             </el-button>
           </el-form-item>
@@ -60,17 +62,63 @@
 export default {
   name: 'RegisterPage',
   data () {
+    const validateRepassword = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请再次输入密码'))
+        return
+      }
+
+      if (value !== this.formModel.password) {
+        callback(new Error('两次输入的密码不一致'))
+        return
+      }
+
+      callback()
+    }
+
     return {
       formModel: {
         username: '',
         password: '',
         repassword: ''
+      },
+      loading: false,
+      rules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
+        repassword: [
+          { validator: validateRepassword, trigger: 'blur' }
+        ]
       }
     }
   },
   methods: {
     goLogin () {
       this.$router.push('/login')
+    },
+    async register () {
+      try {
+        await this.$refs.form.validate()
+        this.loading = true
+        await this.$store.dispatch('user/registerAction', this.formModel)
+        this.$message.success('注册成功')
+        this.$router.push({
+          path: '/login',
+          query: {
+            username: this.formModel.username
+          }
+        })
+      } catch (error) {
+        if (error) {
+          console.log(error)
+        }
+      } finally {
+        this.loading = false
+      }
     }
   }
 }

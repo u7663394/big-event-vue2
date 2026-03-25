@@ -3,7 +3,6 @@ import axios from 'axios'
 import store from '@/store'
 import router from '@/router'
 import { Message } from 'element-ui'
-import { delToken } from './storage'
 
 // 1. 创建 axios 实例
 const request = axios.create({
@@ -39,7 +38,6 @@ request.interceptors.response.use(
         Message.error('当前登陆状态过期, 请重新登陆')
         // 清除 token + 跳转登陆页
         store.commit('user/logout')
-        delToken()
         router.push('/login')
       } else {
         // 2. 其余错误
