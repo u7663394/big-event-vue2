@@ -20,6 +20,7 @@
           label-position="top"
           class="login-form"
           @submit.native.prevent
+          ref="form"
         >
           <el-form-item label="用户名" class="login-form_item">
             <el-input
@@ -37,7 +38,7 @@
             />
           </el-form-item>
           <el-form-item class="login-form_action">
-            <el-button class="submit-btn" type="primary">
+            <el-button class="submit-btn" type="primary" @click="login">
               登录
             </el-button>
           </el-form-item>
@@ -61,6 +62,22 @@ export default {
   methods: {
     goRegister () {
       this.$router.push('/register')
+    },
+    methods: {
+      async login () {
+        // 1. 登陆时先校验
+        const myForm = this.$refs.form
+        try {
+          await myForm.validate()
+          // 2. 通过则调用 vuex 中的 action
+          await this.$store.dispatch('user/loginAction', this.form)
+          // 3. 成功提示 + 跳转首页
+          this.$message.success('登陆成功')
+          this.$router.push('/')
+        } catch (error) {
+          console.log(error)
+        }
+      }
     }
   }
 }
