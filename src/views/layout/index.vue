@@ -15,7 +15,7 @@
             <el-dropdown-item>重置密码</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <div class="logout-action">
+        <div class="logout-action" @click="handleLogout">
           <i class="el-icon-switch-button"></i>
           <span>退出</span>
         </div>
@@ -37,11 +37,11 @@
           unique-opened
           router
         >
-          <el-menu-item index="/home" style="padding-left:35px;font-size:15px">
+          <el-menu-item index="/home" style="padding-left:30px;font-size:15px">
             <i class="el-icon-s-home"></i>
             <span>首页</span>
           </el-menu-item>
-          <el-submenu index="/article">
+          <el-submenu index="/article" style="padding-left: 10px;">
             <template slot="title">
               <i class="el-icon-menu"></i>
               <span>文章管理</span>
@@ -53,6 +53,10 @@
             <el-menu-item index="/article/list">
               <i class="el-icon-tickets"></i>
               <span>文章列表</span>
+            </el-menu-item>
+            <el-menu-item index="/article/edit">
+              <i class="el-icon-star-off"></i>
+              <span>发表文章</span>
             </el-menu-item>
           </el-submenu>
           <el-menu-item index="/user" style="padding-left:35px;font-size:15px">
@@ -73,6 +77,8 @@
 </template>
 
 <script>
+import { MessageBox } from 'element-ui'
+
 export default {
   name: 'my-layout',
   computed: {
@@ -86,7 +92,20 @@ export default {
 
   },
   methods: {
+    async handleLogout () {
+      try {
+        await MessageBox.confirm('确定要退出登录吗？', '提示', {
+          type: 'warning',
+          confirmButtonText: '确认',
+          cancelButtonText: '取消'
+        })
+      } catch (error) {
+        return
+      }
 
+      this.$store.commit('user/logout')
+      this.$router.push('/login')
+    }
   }
 }
 </script>

@@ -223,7 +223,7 @@ export default {
       await this.fetchArticleList()
     },
     handlePublish () {
-      Message.info('功能暂未开放')
+      this.$router.push('/article/edit')
     },
     handleEdit (row) {
       this.$router.push(`/article/edit/${row.id}`)

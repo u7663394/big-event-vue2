@@ -47,6 +47,14 @@ export const getArticleListAPI = (params) => {
   })
 }
 
+export const addArticleAPI = (data) => {
+  return request({
+    url: '/my/article/add',
+    method: 'POST',
+    data
+  })
+}
+
 export const getArticleInfoAPI = (id) => {
   return request({
     url: '/my/article/info',

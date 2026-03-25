@@ -7,7 +7,7 @@ import { delToken, getToken } from './storage'
 // 1. 创建 axios 实例
 const request = axios.create({
   baseURL: 'http://big-event-vue-api-t.itheima.net/',
-  timeout: 7500
+  timeout: 20000
 })
 
 // 2. 请求拦截器
