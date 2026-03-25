@@ -17,7 +17,7 @@
       <el-aside width="200px">
         <div class="user-box">
           <img src="../../assets/images/head.png" alt=""  />
-          <span>欢迎博学谷用户</span>
+          <span>欢迎用户</span>
         </div>
         <!-- 左侧导航菜单 -->
         <el-menu
@@ -51,7 +51,7 @@
           <router-view></router-view>
         </el-main>
         <!-- 底部 footer 区域 -->
-        <el-footer>© www.itheima.com - 黑马程序员</el-footer>
+        <el-footer>© www.xxx.com - Guochen Wang</el-footer>
       </el-container>
     </el-container>
   </el-container>
