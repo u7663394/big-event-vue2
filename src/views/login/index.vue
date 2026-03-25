@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { login } from '@/api/user'
+import { getAuthToken, login } from '@/api/user'
 import { setToken } from '@/utils/storage'
 
 export default {
@@ -84,11 +84,18 @@ export default {
         await this.$refs.form.validate()
         this.loading = true
         const res = await login(this.formModel)
-        setToken(res.token)
+        const token = getAuthToken(res)
+
+        if (!token) {
+          this.$message.error('登录失败，请重试')
+          return
+        }
+
+        setToken(token)
         this.$message.success('登录成功')
         this.$router.push('/home')
       } catch (error) {
-        if (error) {
+        if (error && error !== false && !error.response) {
           console.log(error)
         }
       } finally {

@@ -1,5 +1,5 @@
 // User 相关 Vuex 模块
-import { login, register } from '@/api/user'
+import { getAuthToken, login, register } from '@/api/user'
 import { delToken, getToken, setToken } from '@/utils/storage'
 
 export default {
@@ -28,8 +28,14 @@ export default {
     async loginAction (context, form) {
       // 1. 发送登陆请求
       const res = await login(form)
+      const token = getAuthToken(res)
+
+      if (!token) {
+        throw new Error('LOGIN_TOKEN_MISSING')
+      }
+
       // 2. 调用 mutation 存 token
-      context.commit('setUserToken', res.data.token)
+      context.commit('setUserToken', token)
     }
   },
   getters: {}
