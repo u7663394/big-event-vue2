@@ -1,27 +1,35 @@
 <template>
   <el-container class="main-container">
-    <!-- 头部区域 -->
     <el-header>
-      <!-- 左侧的 logo -->
-      <img src="../../assets/images/logo.png" alt="" />
-
-      <!-- 右侧的菜单 -->
-
-        <!-- 个人中心 -->
-
-        <!-- 退出登录 -->
-
+      <img class="header-logo" src="../../assets/images/logo.png" alt="大事件" />
+      <div class="header-actions">
+        <el-dropdown trigger="click">
+          <div class="user-profile">
+            <img class="avatar" src="../../assets/images/avatar.jpg" alt="用户头像" />
+            <span>个人中心</span>
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </div>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>基本资料</el-dropdown-item>
+            <el-dropdown-item>更换头像</el-dropdown-item>
+            <el-dropdown-item>重置密码</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <div class="logout-action">
+          <i class="el-icon-switch-button"></i>
+          <span>退出</span>
+        </div>
+      </div>
     </el-header>
     <el-container>
-      <!-- 左侧边栏的用户信息 -->
       <el-aside width="200px">
         <div class="user-box">
-          <img src="../../assets/images/head.png" alt=""  />
-          <span>欢迎用户</span>
+          <img src="../../assets/images/head.png" alt="用户头像" />
+          <span>欢迎 admin</span>
         </div>
-        <!-- 左侧导航菜单 -->
         <el-menu
           :default-active="$route.path"
+          :default-openeds="['/article']"
           class="el-menu-vertical-demo"
           background-color="#23262E"
           text-color="#fff"
@@ -33,10 +41,20 @@
             <i class="el-icon-s-home"></i>
             <span>首页</span>
           </el-menu-item>
-          <el-menu-item index="/article" style="padding-left:35px;font-size:15px">
-            <i class="el-icon-document"></i>
-            <span>文章管理</span>
-          </el-menu-item>
+          <el-submenu index="/article">
+            <template slot="title">
+              <i class="el-icon-menu"></i>
+              <span>文章管理</span>
+            </template>
+            <el-menu-item index="/article/cate">
+              <i class="el-icon-s-operation"></i>
+              <span>文章分类</span>
+            </el-menu-item>
+            <el-menu-item index="/article/list">
+              <i class="el-icon-tickets"></i>
+              <span>文章列表</span>
+            </el-menu-item>
+          </el-submenu>
           <el-menu-item index="/user" style="padding-left:35px;font-size:15px">
             <i class="el-icon-user"></i>
             <span>用户管理</span>
@@ -45,12 +63,9 @@
       </el-aside>
 
       <el-container>
-        <!-- 页面主体区域 -->
-        <!-- 二级路由挂载点 -->
         <el-main>
           <router-view></router-view>
         </el-main>
-        <!-- 底部 footer 区域 -->
         <el-footer>© www.xxx.com - Guochen Wang</el-footer>
       </el-container>
     </el-container>
@@ -79,26 +94,32 @@ export default {
 <style lang="less" scoped>
 .main-container {
   height: 100vh;
+
   .el-header,
   .el-aside {
     background-color: #23262e;
   }
+
   .el-header {
     height: 60px !important;
     padding: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #1a1d23;
   }
+
   .el-container {
     min-height: 0;
   }
+
   .el-main {
     overflow-y: auto;
     height: 0;
-    padding: 20px;
-    background-color: #f2f2f2;
+    padding: 16px 20px;
+    background-color: #f4f5f9;
   }
+
   .el-footer {
     height: 40px !important;
     background-color: #eee;
@@ -107,6 +128,17 @@ export default {
     justify-content: center;
     align-items: center;
   }
+}
+
+.header-logo {
+  height: 60px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  padding-right: 24px;
+  color: #fff;
 }
 
 .avatar {
@@ -118,15 +150,38 @@ export default {
   object-fit: cover;
 }
 
-// 左侧边栏用户信息区域
-.user-box {
-  height: 70px;
+.user-profile {
   display: flex;
-  justify-content: center;
   align-items: center;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
+  color: #fff;
+  cursor: pointer;
   user-select: none;
+}
+
+.logout-action {
+  display: flex;
+  align-items: center;
+  margin-left: 28px;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+
+  i {
+    margin-right: 6px;
+    font-size: 18px;
+  }
+}
+
+.user-box {
+  height: 85px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 28px;
+  border-top: 1px solid #191b20;
+  border-bottom: 1px solid #191b20;
+  user-select: none;
+
   img {
     width: 35px;
     height: 35px;
@@ -135,19 +190,31 @@ export default {
     margin-right: 15px;
     object-fit: cover;
   }
+
   span {
     color: white;
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
-// 侧边栏菜单的样式
 .el-aside {
   overflow: hidden;
+
   .el-submenu,
   .el-menu-item {
     width: 200px;
     user-select: none;
+  }
+
+  /deep/ .el-submenu__title,
+  /deep/ .el-menu-item {
+    font-size: 15px;
+  }
+
+  /deep/ .el-submenu .el-menu-item {
+    min-width: 200px;
+    padding-left: 54px !important;
+    background-color: #2a2d35 !important;
   }
 }
 </style>

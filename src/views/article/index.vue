@@ -1,7 +1,6 @@
 <template>
-  <div class="page-box">
-    <h2 class="page-title">文章管理</h2>
-    <p class="page-desc">这里是文章管理页面占位内容。</p>
+  <div class="article-module">
+    <router-view />
   </div>
 </template>
 
@@ -12,18 +11,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.page-box {
-  padding: 24px;
-  background: #fff;
-}
-
-.page-title {
-  margin: 0;
-  color: #1f2d3d;
-}
-
-.page-desc {
-  margin: 12px 0 0;
-  color: #606266;
+.article-module {
+  min-height: 100%;
 }
 </style>

@@ -2,6 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import LayoutPage from '@/views/layout/index.vue'
 import ArticlePage from '@/views/article/index.vue'
+import ArticleCatePage from '@/views/article/cate.vue'
+import ArticleListPage from '@/views/article/list.vue'
 import HomePage from '@/views/home/index.vue'
 import LoginPage from '@/views/login/index.vue'
 import RegisterPage from '@/views/register/index.vue'
@@ -26,7 +28,18 @@ const router = new VueRouter({
         },
         {
           path: '/article',
-          component: ArticlePage
+          component: ArticlePage,
+          redirect: '/article/cate',
+          children: [
+            {
+              path: 'cate',
+              component: ArticleCatePage
+            },
+            {
+              path: 'list',
+              component: ArticleListPage
+            }
+          ]
         },
         {
           path: '/user',
