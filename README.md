@@ -85,7 +85,7 @@ During development, I met several common problems:
 
 ### 3.2 Analysis and Solutions
 
-To solve these problems, I followed a simple way: `first find the cause, then fix it`.
+To solve these problems, I followed a simple way: **first find the cause, then fix it**.
 
 - For inconsistent API data, I created helper methods to extract data, and used Axios response interceptors to handle data in one place.
 - For token issues, I added a unified format in local storage, removed invalid values, and cleaned repeated `Bearer` prefixes.
