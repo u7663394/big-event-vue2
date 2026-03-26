@@ -1,4 +1,4 @@
-# big-event
+# Big-Event
 
 <p align="right">
   🌐 Language: <a href="./README.md">English</a> | Chinese
