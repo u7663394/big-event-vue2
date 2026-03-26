@@ -1,346 +1,465 @@
 <template>
   <div class="home-page">
     <div class="container-fluid">
-      <el-row class="spannel_list" :gutter="10">
-        <el-col :sm="6" :xs="12">
-          <div class="spannel">
-            <em>10015</em><span>篇</span>
-            <b>总文章数</b>
-          </div>
+      <div class="stats-panel">
+        <el-row class="stats-list">
+          <el-col
+            v-for="(item, index) in summaryCards"
+            :key="item.label"
+            :sm="6"
+            :xs="12"
+          >
+            <div class="stats-card" :class="{ 'stats-card--divider': index !== summaryCards.length - 1 }">
+              <div class="stats-card__content">
+                <div class="stats-card__info">
+                  <strong>{{ item.value }}</strong>
+                  <span>{{ item.label }}</span>
+                </div>
+                <div class="stats-card__icon" :class="item.iconClass">
+                  <i :class="item.icon"></i>
+                </div>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <el-row class="curve-pie" :gutter="16">
+        <el-col :sm="18" :xs="24" >
+          <div class="graph-panel graph-panel--large" id="curve_show"></div>
         </el-col>
-        <el-col :sm="6" :xs="12">
-          <div class="spannel scolor01">
-            <em>123</em><span>篇</span>
-            <b>日新增文章数</b>
-          </div>
-        </el-col>
-        <el-col :sm="6" :xs="12">
-          <div class="spannel scolor02">
-            <em>35</em><span>条</span>
-            <b>评论总数</b>
-          </div>
-        </el-col>
-        <el-col :sm="6" :xs="12">
-          <div class="spannel scolor03">
-            <em>123</em><span>条</span>
-            <b>日新增评论数</b>
-          </div>
+        <el-col :sm="6" :xs="24" style="padding-left: 18px;">
+          <div class="graph-panel graph-panel--side" id="pie_show" style="width: 280px;"></div>
         </el-col>
       </el-row>
     </div>
 
     <div class="container-fluid">
-      <el-row class="curve-pie" :gutter="10">
-        <el-col :sm="16" :xs="16">
-          <div class="gragh_pannel" id="curve_show"></div>
-        </el-col>
-        <el-col :sm="8" :xs="8">
-          <div class="gragh_pannel" id="pie_show"></div>
-        </el-col>
-      </el-row>
-    </div>
-
-    <div class="container-fluid">
-      <div class="column_pannel" id="column_show"></div>
+      <div class="graph-panel column-panel" id="column_show"></div>
     </div>
   </div>
 </template>
 
 <script>
-// 模块内用命名导出的, 我把他们再收集起来形成对象, 放到echrats变量里
 import * as echarts from 'echarts'
+
+const CHART_TEXT_COLOR = '#27374f'
+const CHART_MUTED_COLOR = '#7e90a8'
+const CHART_GRID_COLOR = '#dbe8f3'
+const CHART_TOOLTIP_BG = 'rgba(255, 255, 255, 0.96)'
+const THEME_COLORS = ['#69b8ff', '#4e79f6', '#5368e8', '#66dbb0']
+
+const MONTHLY_ARTICLE_DATA = [
+  { count: 128, date: '2025-04-13' },
+  { count: 250, date: '2025-04-16' },
+  { count: 188, date: '2025-04-19' },
+  { count: 128, date: '2025-04-22' },
+  { count: 188, date: '2025-04-25' },
+  { count: 128, date: '2025-04-28' },
+  { count: 163, date: '2025-05-01' },
+  { count: 40, date: '2025-05-04' },
+  { count: 5, date: '2025-05-07' },
+  { count: 5, date: '2025-05-10' }
+]
+
 export default {
   name: 'my-home',
+  data () {
+    return {
+      summaryCards: [
+        { value: 10040, label: '文章总数', icon: 'el-icon-copy-document', iconClass: 'is-article-total' },
+        { value: 1056, label: '日新增文章数', icon: 'el-icon-document', iconClass: 'is-article-daily' },
+        { value: 11148, label: '评论总数', icon: 'el-icon-chat-line-square', iconClass: 'is-comment-total' },
+        { value: 420, label: '日新增评论数', icon: 'el-icon-chat-dot-square', iconClass: 'is-comment-daily' }
+      ],
+      curveChart: null,
+      pieChart: null,
+      columnChart: null
+    }
+  },
   mounted () {
-    // 面积图
-    this.setCurveChartFn()
-    // 饼状图
-    this.picChartFn()
-    // 柱状图
-    this.columnChartFn()
+    this.initCharts()
+    window.addEventListener('resize', this.handleResize)
+  },
+  beforeDestroy () {
+    window.removeEventListener('resize', this.handleResize)
+    this.disposeCharts()
   },
   methods: {
-    // 设置面积图
-    setCurveChartFn () {
-      // 基于准备好的dom，初始化echarts实例
-      const curveChart = echarts.init(document.getElementById('curve_show'))
-      // 绘制面积图表
-      // 数据源(模拟后台返回的数据)
-      const aListAll = [
-        { count: 36, date: '2019-04-13' },
-        { count: 52, date: '2019-04-14' },
-        { count: 78, date: '2019-04-15' },
-        { count: 85, date: '2019-04-16' },
-        { count: 65, date: '2019-04-17' },
-        { count: 72, date: '2019-04-18' },
-        { count: 88, date: '2019-04-19' },
-        { count: 64, date: '2019-04-20' },
-        { count: 72, date: '2019-04-21' },
-        { count: 90, date: '2019-04-22' },
-        { count: 96, date: '2019-04-23' },
-        { count: 100, date: '2019-04-24' },
-        { count: 102, date: '2019-04-25' },
-        { count: 110, date: '2019-04-26' },
-        { count: 123, date: '2019-04-27' },
-        { count: 100, date: '2019-04-28' },
-        { count: 132, date: '2019-04-29' },
-        { count: 146, date: '2019-04-30' },
-        { count: 200, date: '2019-05-01' },
-        { count: 180, date: '2019-05-02' },
-        { count: 163, date: '2019-05-03' },
-        { count: 110, date: '2019-05-04' },
-        { count: 80, date: '2019-05-05' },
-        { count: 82, date: '2019-05-06' },
-        { count: 70, date: '2019-05-07' },
-        { count: 65, date: '2019-05-08' },
-        { count: 54, date: '2019-05-09' },
-        { count: 40, date: '2019-05-10' },
-        { count: 45, date: '2019-05-11' },
-        { count: 38, date: '2019-05-12' }
-      ]
-
-      // 但是图标要求直接给数字的值, 所以要把对象的值取出来形成2个只有值的数组
-      const aCount = []
-      const aDate = []
-
-      for (let i = 0; i < aListAll.length; i++) {
-        aCount.push(aListAll[i].count)
-        aDate.push(aListAll[i].date)
-      }
-
-      // 面积图的echarts配置项(参考文档复制)
-      const chartopt = {
-        title: {
-          text: '月新增文章数', // 标题
-          left: 'center', // 位置居中
-          top: '10' // 标题距离容器顶部px
+    initCharts () {
+      this.setCurveChartFn()
+      this.picChartFn()
+      this.columnChartFn()
+    },
+    handleResize () {
+      ;[this.curveChart, this.pieChart, this.columnChart].forEach((chart) => {
+        if (chart) {
+          chart.resize()
+        }
+      })
+    },
+    disposeCharts () {
+      ;['curveChart', 'pieChart', 'columnChart'].forEach((key) => {
+        if (this[key]) {
+          this[key].dispose()
+          this[key] = null
+        }
+      })
+    },
+    createToolbox (top = 18) {
+      return {
+        show: true,
+        right: 20,
+        top,
+        itemSize: 16,
+        iconStyle: {
+          borderColor: '#7b8ba7'
         },
-        tooltip: { // 提示框组件
-          trigger: 'axis' // 坐标轴触发(鼠标放在坐标轴就能出提示框)
-        },
-        legend: { // 图例组件(每种颜色的意思)
-          data: ['新增文章'], // 图例文字解释(要和series里name对应)
-          top: '40' // 距离容器顶部px
-        },
-        toolbox: { // 工具栏
-          show: true, // 要显示
-          feature: { // 各工具配置项
-            mark: { show: true }, // 辅助线开关
-            dataView: { show: true, readOnly: false }, // 数据视图工具，可以展现当前图表所用的数据，编辑后可以动态更新。
-            magicType: { show: true, type: ['line', 'bar'] }, // 动态类型切换
-            restore: { show: true }, // 配置项还原
-            saveAsImage: { show: true } // 点击保存下载图片
+        emphasis: {
+          iconStyle: {
+            borderColor: '#2f6bff'
           }
         },
-        xAxis: [ // 水平轴显示
-          {
-            name: '日',
-            type: 'category',
-            boundaryGap: false, // 坐标轴两边留白策略 (不留白)
-            data: aDate // 水平轴上的数字数据 (时间)
-          }
-        ],
-        yAxis: [ // 垂直轴显示
-          {
-            name: '月新增文章数',
-            type: 'value' // 以series里的data值做划分段
-          }
-        ],
-        series: [ // 系列(控制图表类型和数据)
-          {
-            name: '新增文章',
-            type: 'line', // 折线图
-            smooth: true, // 是否平滑视觉引导线，默认不平滑，可以设置成 true 平滑显示
-            areaStyle: { type: 'default' }, // 区域填充样式。设置后显示成区域面积图。
-            itemStyle: { color: '#f80', lineStyle: { color: '#f80' } }, // 折线拐点标志的样式。
-            data: aCount // 真正数据源(用下标和x轴数组对应)
-          }
-        ],
-        grid: { // 直角坐标系内绘图网格
-          show: true,
-          x: 50, // grid 组件离容器偏移量, 左侧
-          x2: 50, // 右侧
-          y: 80, // 上
-          height: 220 // 高度
+        feature: {
+          dataView: { show: true, readOnly: false },
+          magicType: { show: true, type: ['line', 'bar'] },
+          restore: { show: true },
+          saveAsImage: { show: true }
         }
       }
-
-      curveChart.setOption(chartopt)
     },
-    // 设置饼状图
-    picChartFn () {
-      const oPie = echarts.init(document.getElementById('pie_show'))
-      const oPieopt = {
+    getAxisStyle () {
+      return {
+        axisLine: {
+          lineStyle: {
+            color: '#cbd9e6'
+          }
+        },
+        axisTick: {
+          show: false
+        },
+        axisLabel: {
+          color: CHART_MUTED_COLOR
+        },
+        splitLine: {
+          lineStyle: {
+            color: CHART_GRID_COLOR,
+            type: 'dashed'
+          }
+        }
+      }
+    },
+    setCurveChartFn () {
+      this.curveChart = echarts.init(document.getElementById('curve_show'))
+      const aCount = MONTHLY_ARTICLE_DATA.map((item) => item.count)
+      const aDate = MONTHLY_ARTICLE_DATA.map((item) => item.date.replace(/-/g, '.'))
+      const chartopt = {
+        color: ['#67d8d0'],
         title: {
-          top: 10,
-          text: '分类文章数量比',
-          x: 'center'
+          text: '月新增文章数',
+          left: 24,
+          top: 24,
+          textStyle: {
+            color: CHART_TEXT_COLOR,
+            fontSize: 16,
+            fontWeight: 700
+          }
         },
         tooltip: {
-          trigger: 'item', // 在图形上才会触发提示
-          formatter: '{a} <br/>{b} : {c} ({d}%)' // 提示的文字显示的格式
-          // a: 系列名
-          // b: 数据名
-          // c: 数值
-          // d: 百分比 (只有饼状图生效)
+          trigger: 'axis',
+          backgroundColor: CHART_TOOLTIP_BG,
+          borderColor: '#d4e5f2',
+          borderWidth: 1,
+          textStyle: {
+            color: CHART_TEXT_COLOR
+          },
+          extraCssText: 'box-shadow: 0 10px 24px rgba(57, 94, 136, 0.12); border-radius: 12px;',
+          axisPointer: {
+            lineStyle: {
+              color: '#89abff'
+            }
+          }
         },
-        color: ['#5885e8', '#13cfd5', '#00ce68', '#ff9565'], // 系列颜色
-        legend: { // 图例组件
-          x: 'center',
-          top: 65,
-          data: ['奇趣事', '会生活', '爱旅行', '趣美味'] // 每个部分对应的数据名(要和series里name对应)
+        legend: {
+          show: false
         },
-        toolbox: { // 工具箱
-          show: true,
-          x: 'center',
-          top: 35,
-          feature: {
-            mark: { show: true },
-            dataView: { show: true, readOnly: false },
-            magicType: {
-              show: true,
-              type: ['pie', 'funnel'],
-              option: {
-                funnel: {
-                  x: '25%',
-                  width: '50%',
-                  funnelAlign: 'left',
-                  max: 1548
-                }
+        toolbox: this.createToolbox(22),
+        grid: {
+          top: 86,
+          left: 56,
+          right: 36,
+          bottom: 56
+        },
+        xAxis: [
+          {
+            type: 'category',
+            boundaryGap: false,
+            data: aDate,
+            axisLine: {
+              lineStyle: {
+                color: '#d4e5f2'
               }
             },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              color: '#a1afc4',
+              margin: 16
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value',
+            min: 0,
+            max: 250,
+            interval: 50,
+            ...this.getAxisStyle()
+          }
+        ],
+        series: [
+          {
+            name: '新增文章',
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            data: aCount,
+            lineStyle: {
+              width: 3,
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: '#8de6db' },
+                { offset: 1, color: '#5875f4' }
+              ])
+            },
+            itemStyle: {
+              color: '#8de6db',
+              borderColor: '#ffffff',
+              borderWidth: 2
+            },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(132, 229, 221, 0.35)' },
+                { offset: 1, color: 'rgba(87, 116, 244, 0.06)' }
+              ])
+            }
+          }
+        ]
+      }
+
+      this.curveChart.setOption(chartopt)
+    },
+    picChartFn () {
+      this.pieChart = echarts.init(document.getElementById('pie_show'))
+      const pieData = [
+        { value: 360, name: '奇趣事' },
+        { value: 270, name: '会生活' },
+        { value: 180, name: '爱旅行' },
+        { value: 90, name: '趣美味' }
+      ]
+      const total = pieData.reduce((sum, item) => sum + item.value, 0)
+      const oPieopt = {
+        color: THEME_COLORS,
+        title: {
+          text: '分类文章数量比',
+          left: 24,
+          top: 24,
+          textStyle: {
+            color: CHART_TEXT_COLOR,
+            fontSize: 16,
+            fontWeight: 700
+          }
+        },
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: CHART_TOOLTIP_BG,
+          borderColor: '#d4e5f2',
+          borderWidth: 1,
+          textStyle: {
+            color: CHART_TEXT_COLOR
+          },
+          formatter: '{b}: {c}({d}%)',
+          extraCssText: 'box-shadow: 0 10px 24px rgba(57, 94, 136, 0.12); border-radius: 1px;'
+        },
+        legend: {
+          orient: 'vertical',
+          left: 24,
+          bottom: 26,
+          itemWidth: 12,
+          itemHeight: 12,
+          icon: 'roundRect',
+          textStyle: {
+            color: CHART_MUTED_COLOR,
+            fontSize: 13
+          },
+          formatter: (name) => {
+            const target = pieData.find((item) => item.name === name)
+            const percent = target ? Math.round((target.value / total) * 100) : 0
+            return `${name}        ${percent}%`
+          }
+        },
+        toolbox: {
+          show: true,
+          right: 20,
+          bottom: 22,
+          itemSize: 16,
+          iconStyle: {
+            borderColor: '#7b8ba7'
+          },
+          emphasis: {
+            iconStyle: {
+              borderColor: '#2f6bff'
+            }
+          },
+          feature: {
+            dataView: { show: true, readOnly: false },
             restore: { show: true },
             saveAsImage: { show: true }
           }
         },
         series: [
           {
-            name: '访问来源',
+            name: '分类文章数量比',
             type: 'pie',
-            radius: ['45%', '60%'],
-            center: ['50%', '65%'],
-            data: [
-              { value: 300, name: '奇趣事' },
-              { value: 100, name: '会生活' },
-              { value: 260, name: '爱旅行' },
-              { value: 180, name: '趣美味' }
-            ]
+            radius: ['56%', '78%'],
+            center: ['50%', '42%'],
+            avoidLabelOverlap: false,
+            label: {
+              show: false
+            },
+            itemStyle: {
+              borderRadius: 10,
+              borderColor: '#ffffff',
+              borderWidth: 3
+            },
+            data: pieData
           }
         ]
       }
-      oPie.setOption(oPieopt)
+
+      this.pieChart.setOption(oPieopt)
     },
-    // 设置底部柱状图
     columnChartFn () {
-      const oColumn = echarts.init(document.getElementById('column_show'))
+      this.columnChart = echarts.init(document.getElementById('column_show'))
       const oColumnopt = {
+        color: THEME_COLORS,
         title: {
           text: '文章访问量',
-          left: 'center',
-          top: '10'
+          left: 24,
+          top: 24,
+          textStyle: {
+            color: CHART_TEXT_COLOR,
+            fontSize: 16,
+            fontWeight: 700
+          }
         },
         tooltip: {
-          trigger: 'axis'
+          trigger: 'axis',
+          backgroundColor: CHART_TOOLTIP_BG,
+          borderColor: '#d4e5f2',
+          borderWidth: 1,
+          textStyle: {
+            color: CHART_TEXT_COLOR
+          },
+          extraCssText: 'box-shadow: 0 10px 24px rgba(57, 94, 136, 0.12); border-radius: 12px;',
+          axisPointer: {
+            type: 'shadow',
+            shadowStyle: {
+              color: 'rgba(110, 194, 255, 0.08)'
+            }
+          }
         },
         legend: {
           data: ['奇趣事', '会生活', '爱旅行', '趣美味'],
-          top: '40'
-        },
-        toolbox: {
-          show: true,
-          feature: {
-            mark: { show: true },
-            dataView: { show: true, readOnly: false },
-            magicType: { show: true, type: ['line', 'bar'] },
-            restore: { show: true },
-            saveAsImage: { show: true }
+          left: 24,
+          top: 64,
+          itemWidth: 12,
+          itemHeight: 12,
+          icon: 'roundRect',
+          textStyle: {
+            color: CHART_MUTED_COLOR,
+            fontSize: 13
           }
+        },
+        toolbox: this.createToolbox(22),
+        grid: {
+          top: 112,
+          left: 56,
+          right: 36,
+          bottom: 44
         },
         xAxis: [
           {
             type: 'category',
-            data: ['1月', '2月', '3月', '4月', '5月']
+            data: ['一月', '二月', '三月', '四月', '五月'],
+            axisLine: {
+              lineStyle: {
+                color: '#d4e5f2'
+              }
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              color: '#a1afc4',
+              margin: 14
+            }
           }
         ],
         yAxis: [
           {
-            name: '访问量',
-            type: 'value'
+            type: 'value',
+            ...this.getAxisStyle()
           }
         ],
         series: [
           {
             name: '奇趣事',
             type: 'bar',
-            barWidth: 20,
-            areaStyle: { type: 'default' },
+            barWidth: 16,
             itemStyle: {
-              color: '#fd956a'
+              color: '#79bfff',
+              borderRadius: [8, 8, 0, 0]
             },
-            data: [800, 708, 920, 1090, 1200]
+            data: [965, 720, 985, 780, 500]
           },
           {
             name: '会生活',
             type: 'bar',
-            barWidth: 20,
-            areaStyle: { type: 'default' },
+            barWidth: 16,
             itemStyle: {
-              color: '#2bb6db'
+              color: '#4e79f6',
+              borderRadius: [8, 8, 0, 0]
             },
-            data: [400, 468, 520, 690, 800]
+            data: [720, 360, 420, 180, 520]
           },
           {
             name: '爱旅行',
             type: 'bar',
-            barWidth: 20,
-            areaStyle: { type: 'default' },
+            barWidth: 16,
             itemStyle: {
-              color: '#13cfd5'
+              color: '#5a6de8',
+              borderRadius: [8, 8, 0, 0]
             },
-            data: [500, 668, 520, 790, 900]
+            data: [790, 910, 770, 860, 915]
           },
           {
             name: '趣美味',
             type: 'bar',
-            barWidth: 20,
-            areaStyle: { type: 'default' },
+            barWidth: 16,
             itemStyle: {
-              color: '#00ce68'
+              color: '#66dbb0',
+              borderRadius: [8, 8, 0, 0]
             },
-            data: [600, 508, 720, 890, 1000]
-          }
-        ],
-        grid: {
-          show: true,
-          x: 50,
-          x2: 30,
-          y: 80,
-          height: 260
-        },
-        dataZoom: [ // 给x轴设置滚动条
-          {
-            start: 0, // 默认为0
-            end: 100 - 1000 / 31, // 默认为100
-            type: 'slider',
-            show: true,
-            xAxisIndex: [0],
-            handleSize: 0, // 滑动条的 左右2个滑动条的大小
-            height: 8, // 组件高度
-            left: 45, // 左边的距离
-            right: 50, // 右边的距离
-            bottom: 26, // 右边的距离
-            handleColor: '#ddd', // h滑动图标的颜色
-            handleStyle: {
-              borderColor: '#cacaca',
-              borderWidth: '1',
-              shadowBlur: 2,
-              background: '#ddd',
-              shadowColor: '#ddd'
-            }
+            data: [550, 560, 550, 355, 835]
           }
         ]
       }
-      oColumn.setOption(oColumnopt)
+
+      this.columnChart.setOption(oColumnopt)
     }
   }
 }
@@ -355,82 +474,169 @@ export default {
   width: 100%;
 }
 
-.spannel_list {
-  margin-top: 0;
+.stats-panel {
+  margin-bottom: 20px;
+  padding: 12px 18px;
+  border: 1px solid #e2edf5;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+  box-shadow: 0 10px 30px rgba(76, 112, 164, 0.08);
 }
 
-.spannel {
-  height: 100px;
-  overflow: hidden;
-  text-align: center;
+.stats-list {
+  margin: 0 !important;
+}
+
+.stats-card {
   position: relative;
-  background-color: #fff;
-  border: 1px solid #e7e7e9;
-  margin-bottom: 20px;
+  min-height: 96px;
+  padding: 8px 22px;
 }
 
-.spannel em {
-  font-style: normal;
-  font-size: 50px;
-  line-height: 50px;
-  display: inline-block;
-  margin: 10px 0 0 20px;
-  font-family: 'Arial';
-  color: #83a2ed;
-}
-
-.spannel span {
-  font-size: 14px;
-  display: inline-block;
-  color: #83a2ed;
-  margin-left: 10px;
-}
-
-.spannel b {
+.stats-card--divider::after {
+  content: '';
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  line-height: 24px;
-  background: #e5e5e5;
-  color: #333;
-  font-size: 14px;
-  font-weight: normal;
+  top: 12px;
+  right: 0;
+  width: 1px;
+  height: calc(100% - 24px);
+  background: linear-gradient(180deg, rgba(186, 204, 223, 0.1) 0%, rgba(186, 204, 223, 0.9) 50%, rgba(186, 204, 223, 0.1) 100%);
 }
 
-.scolor01 em,
-.scolor01 span {
-  color: #6ac6e2;
+.stats-card__content {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.scolor02 em,
-.scolor02 span {
-  color: #5fd9de;
+.stats-card__info {
+  min-width: 0;
 }
 
-.scolor03 em,
-.scolor03 span {
-  color: #58d88e;
+.stats-card__info strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #202c42;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.gragh_pannel {
-  height: 350px;
-  border: 1px solid #e7e7e9;
-  background-color: #fff !important;
+.stats-card__info span {
+  display: block;
+  color: #7f91a8;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.stats-card__icon {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff5ff;
+}
+
+.stats-card__icon i {
+  font-size: 28px;
+  color: #4f80ff;
+}
+
+.stats-card__icon.is-article-total {
+  background: rgba(113, 186, 255, 0.14);
+}
+
+.stats-card__icon.is-article-daily {
+  background: rgba(86, 124, 255, 0.12);
+}
+
+.stats-card__icon.is-comment-total {
+  background: rgba(88, 219, 202, 0.15);
+}
+
+.stats-card__icon.is-comment-daily {
+  background: rgba(102, 219, 176, 0.14);
+}
+
+.stats-card__icon.is-comment-total i {
+  color: #4f84ff;
+}
+
+.stats-card__icon.is-comment-daily i {
+  color: #4b78ff;
+}
+
+.graph-panel {
   margin-bottom: 20px;
+  border: 1px solid #e2edf5;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+  box-shadow: 0 10px 30px rgba(76, 112, 164, 0.08);
 }
 
-.column_pannel {
-  margin-bottom: 20px;
-  height: 400px;
-  border: 1px solid #e7e7e9;
-  background-color: #fff !important;
+.graph-panel--large,
+.graph-panel--side {
+  height: 430px;
+}
+
+.column-panel {
+  height: 430px;
+}
+
+@media (max-width: 1200px) {
+  .stats-card {
+    padding: 8px 16px;
+  }
+
+  .stats-card__info strong {
+    font-size: 24px;
+  }
+
+  .stats-card__info span {
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 768px) {
-  .gragh_pannel,
-  .column_pannel {
-    height: 320px;
+  .stats-panel {
+    padding: 10px 14px;
+  }
+
+  .stats-card {
+    min-height: 88px;
+  }
+
+  .stats-card--divider::after {
+    display: none;
+  }
+
+  .stats-card__icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .stats-card__icon i {
+    font-size: 24px;
+  }
+
+  .stats-card__info strong {
+    font-size: 24px;
+  }
+
+  .stats-card__info span {
+    font-size: 14px;
+  }
+
+  .graph-panel--large,
+  .graph-panel--side,
+  .column-panel {
+    height: 360px;
   }
 }
 </style>
