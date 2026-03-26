@@ -28,6 +28,7 @@
           <span>欢迎 {{ displayName }}</span>
         </div>
         <el-menu
+          :key="menuRenderKey"
           :default-active="activeMenu"
           :default-openeds="openedMenus"
           class="el-menu-vertical-demo"
@@ -37,46 +38,31 @@
           unique-opened
           @select="handleMenuSelect"
         >
-          <el-menu-item index="/home" style="padding-left:30px;font-size:15px">
-            <i class="el-icon-s-home"></i>
-            <span>首页</span>
-          </el-menu-item>
-          <el-submenu index="/article" style="padding-left: 10px;">
-            <template slot="title">
-              <i class="el-icon-menu"></i>
-              <span>文章管理</span>
-            </template>
-            <el-menu-item index="/article/cate">
-              <i class="el-icon-s-operation"></i>
-              <span>文章分类</span>
+          <template v-for="menu in menuList">
+            <el-menu-item
+              v-if="!hasChildren(menu)"
+              :key="menu.indexPath"
+              :index="menu.indexPath"
+              style="padding-left:30px;font-size:15px"
+            >
+              <i :class="menu.icon"></i>
+              <span>{{ menu.title }}</span>
             </el-menu-item>
-            <el-menu-item index="/article/list">
-              <i class="el-icon-tickets"></i>
-              <span>文章列表</span>
-            </el-menu-item>
-            <el-menu-item index="/article/edit">
-              <i class="el-icon-star-off"></i>
-              <span>发表文章</span>
-            </el-menu-item>
-          </el-submenu>
-          <el-submenu index="/user-center" style="padding-left: 10px;">
-            <template slot="title">
-              <i class="el-icon-user"></i>
-              <span>个人中心</span>
-            </template>
-            <el-menu-item index="/user?tab=profile">
-              <i class="el-icon-tickets"></i>
-              <span>基本资料</span>
-            </el-menu-item>
-            <el-menu-item index="/user?tab=avatar">
-              <i class="el-icon-camera"></i>
-              <span>更换头像</span>
-            </el-menu-item>
-            <el-menu-item index="/user?tab=password">
-              <i class="el-icon-lock"></i>
-              <span>重置密码</span>
-            </el-menu-item>
-          </el-submenu>
+            <el-submenu v-else :key="menu.indexPath" :index="menu.indexPath" style="padding-left: 10px;">
+              <template slot="title">
+                <i :class="menu.icon"></i>
+                <span>{{ menu.title }}</span>
+              </template>
+              <el-menu-item
+                v-for="child in menu.children"
+                :key="child.indexPath"
+                :index="child.indexPath"
+              >
+                <i :class="child.icon"></i>
+                <span>{{ child.title }}</span>
+              </el-menu-item>
+            </el-submenu>
+          </template>
         </el-menu>
       </el-aside>
 
@@ -92,38 +78,70 @@
 
 <script>
 import { MessageBox } from 'element-ui'
+import { getMenusAPI } from '@/api'
 import defaultAvatar from '@/assets/images/head.png'
+
+const MENU_FALLBACK_GROUP_MAP = {
+  '/art-cate': '2',
+  '/art-list': '2',
+  '/article/edit': '2',
+  '/user-info': '3',
+  '/user-avatar': '3',
+  '/user-pwd': '3'
+}
+
+const USER_COMMAND_TO_PATH = {
+  profile: '/user-info',
+  avatar: '/user-avatar',
+  password: '/user-pwd'
+}
+
+const getMenuPayload = (response) => {
+  const candidates = [response, response?.data]
+
+  for (const item of candidates) {
+    if (Array.isArray(item)) {
+      return item
+    }
+    if (Array.isArray(item?.data)) {
+      return item.data
+    }
+  }
+
+  return []
+}
 
 export default {
   name: 'my-layout',
+  data () {
+    return {
+      menuList: []
+    }
+  },
   computed: {
     userInfo () {
       return this.$store.state.user.userInfo
     },
     activeMenu () {
-      if (this.$route.path === '/user') {
-        return `/user?tab=${this.$route.query.tab || 'profile'}`
+      if (this.$route.path.startsWith('/article/edit')) {
+        return '/art-list'
       }
 
       return this.$route.path
     },
     openedMenus () {
-      if (this.$route.path === '/user') {
-        return ['/user-center']
-      }
+      const activeGroup = this.findParentMenuIndex(this.activeMenu)
 
-      return ['/article']
+      return activeGroup ? [activeGroup] : []
     },
     displayName () {
       return this.userInfo.nickname || this.userInfo.username || '个人中心'
     },
     displayAvatar () {
       return this.userInfo.user_pic || defaultAvatar
-    }
-  },
-  data () {
-    return {
-
+    },
+    menuRenderKey () {
+      return `${this.activeMenu}-${this.openedMenus.join(',')}`
     }
   },
   async created () {
@@ -132,30 +150,45 @@ export default {
         await this.$store.dispatch('user/getUserInfoAction')
       } catch (error) {}
     }
+
+    await this.fetchMenuList()
   },
   methods: {
-    handleMenuSelect (index) {
-      if (index === this.activeMenu) {
-        return
+    async fetchMenuList () {
+      try {
+        const res = await getMenusAPI()
+        this.menuList = getMenuPayload(res).filter((item) => item.indexPath !== '/article/edit')
+      } catch (error) {
+        this.menuList = []
+      }
+    },
+    hasChildren (menu) {
+      return Array.isArray(menu.children) && menu.children.length > 0
+    },
+    findParentMenuIndex (path) {
+      const matchedMenu = this.menuList.find((menu) => {
+        if (!this.hasChildren(menu)) {
+          return false
+        }
+
+        return menu.children.some((child) => child.indexPath === path)
+      })
+
+      if (matchedMenu) {
+        return matchedMenu.indexPath
       }
 
-      if (index.startsWith('/user?tab=')) {
-        this.$router.push({
-          path: '/user',
-          query: {
-            tab: index.split('=')[1]
-          }
-        })
+      return MENU_FALLBACK_GROUP_MAP[path] || ''
+    },
+    handleMenuSelect (index) {
+      if (index === this.activeMenu) {
         return
       }
 
       this.$router.push(index)
     },
     handleUserCommand (command) {
-      this.$router.push({
-        path: '/user',
-        query: { tab: command }
-      })
+      this.$router.push(USER_COMMAND_TO_PATH[command] || '/user-info')
     },
     async handleLogout () {
       try {
@@ -284,6 +317,7 @@ export default {
 
 .el-aside {
   overflow: hidden;
+  overflow-y: auto;
 
   .el-submenu,
   .el-menu-item {

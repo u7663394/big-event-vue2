@@ -75,6 +75,23 @@
         />
       </div>
     </div>
+
+    <el-dialog
+      title="发表文章"
+      :visible.sync="publishDialogVisible"
+      width="980px"
+      top="6vh"
+      destroy-on-close
+      :close-on-click-modal="false"
+      :before-close="handlePublishDialogBeforeClose"
+      @opened="handlePublishDialogOpened"
+    >
+      <article-form
+        v-if="publishDialogVisible"
+        ref="publishArticleForm"
+        @success="handlePublishSuccess"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -82,6 +99,7 @@
 import dayjs from 'dayjs'
 import { Message, MessageBox } from 'element-ui'
 import { deleteArticleAPI, getArticleCateListAPI, getArticleListAPI } from '@/api/article'
+import ArticleForm from './components/article-form.vue'
 
 const defaultFilterForm = () => ({
   cate_id: '',
@@ -143,9 +161,13 @@ const getArticleTotal = (payload, listLength) => {
 
 export default {
   name: 'ArticleListPage',
+  components: {
+    ArticleForm
+  },
   data () {
     return {
       loading: false,
+      publishDialogVisible: false,
       total: 0,
       filterForm: defaultFilterForm(),
       queryParams: {
@@ -223,10 +245,37 @@ export default {
       await this.fetchArticleList()
     },
     handlePublish () {
-      this.$router.push('/article/edit')
+      this.publishDialogVisible = true
     },
     handleEdit (row) {
       this.$router.push(`/article/edit/${row.id}`)
+    },
+    async handlePublishDialogOpened () {
+      await this.$nextTick()
+      if (this.$refs.publishArticleForm) {
+        await this.$refs.publishArticleForm.initialize()
+      }
+    },
+    async handlePublishDialogBeforeClose (done) {
+      const formRef = this.$refs.publishArticleForm
+
+      if (!formRef || !formRef.hasUnsavedChanges()) {
+        done()
+        return
+      }
+
+      try {
+        await MessageBox.confirm('此操作将导致文章信息丢失，是否继续？', '提示', {
+          type: 'warning',
+          confirmButtonText: '确认',
+          cancelButtonText: '取消'
+        })
+        done()
+      } catch (error) {}
+    },
+    async handlePublishSuccess () {
+      this.publishDialogVisible = false
+      await this.fetchArticleList()
     },
     async handleDelete (row) {
       try {
@@ -291,5 +340,9 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-top: 30px;
+}
+
+/deep/ .el-dialog__body {
+  padding-top: 10px;
 }
 </style>

@@ -109,7 +109,11 @@ import { Message } from 'element-ui'
 import defaultAvatar from '@/assets/images/head.png'
 import { updateUserAvatar, updateUserInfo, updateUserPassword } from '@/api/user'
 
-const TAB_LIST = ['profile', 'avatar', 'password']
+const PATH_TAB_MAP = {
+  '/user-info': 'profile',
+  '/user-avatar': 'avatar',
+  '/user-pwd': 'password'
+}
 
 export default {
   name: 'UserPage',
@@ -193,8 +197,7 @@ export default {
       return this.$store.state.user.userInfo
     },
     activeTab () {
-      const tab = this.$route.query.tab
-      return TAB_LIST.includes(tab) ? tab : 'profile'
+      return PATH_TAB_MAP[this.$route.path] || 'profile'
     },
     panelTitle () {
       const titleMap = {
@@ -207,14 +210,6 @@ export default {
     }
   },
   watch: {
-    '$route.query.tab': {
-      immediate: true,
-      handler () {
-        if (!TAB_LIST.includes(this.$route.query.tab)) {
-          this.replaceTab('profile')
-        }
-      }
-    },
     userInfo: {
       immediate: true,
       deep: true,
@@ -232,14 +227,18 @@ export default {
   },
   methods: {
     replaceTab (tab) {
-      if (this.$route.query.tab === tab) {
+      const pathMap = {
+        profile: '/user-info',
+        avatar: '/user-avatar',
+        password: '/user-pwd'
+      }
+      const targetPath = pathMap[tab] || '/user-info'
+
+      if (this.$route.path === targetPath) {
         return
       }
 
-      this.$router.replace({
-        path: '/user',
-        query: { tab }
-      })
+      this.$router.replace(targetPath)
     },
     resetProfileForm () {
       this.profileForm.nickname = ''

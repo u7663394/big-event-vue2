@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import LayoutPage from '@/views/layout/index.vue'
-import ArticlePage from '@/views/article/index.vue'
 import ArticleCatePage from '@/views/article/cate.vue'
 import ArticleEditPage from '@/views/article/edit.vue'
 import ArticleListPage from '@/views/article/list.vue'
@@ -22,35 +21,61 @@ const router = new VueRouter({
     {
       path: '/layout',
       component: LayoutPage,
+      redirect: '/home',
       children: [
         {
           path: '/home',
           component: HomePage
         },
         {
-          path: '/article',
-          component: ArticlePage,
-          redirect: '/article/cate',
-          children: [
-            {
-              path: 'cate',
-              component: ArticleCatePage
-            },
-            {
-              path: 'list',
-              component: ArticleListPage
-            },
-            {
-              path: 'edit/:id?',
-              component: ArticleEditPage
-            }
-          ]
+          path: '/art-cate',
+          component: ArticleCatePage
         },
         {
-          path: '/user',
+          path: '/art-list',
+          component: ArticleListPage
+        },
+        {
+          path: '/user-info',
           component: UserPage
+        },
+        {
+          path: '/user-avatar',
+          component: UserPage
+        },
+        {
+          path: '/user-pwd',
+          component: UserPage
+        },
+        {
+          path: '/article/edit/:id?',
+          component: ArticleEditPage
         }
       ]
+    },
+    {
+      path: '/article',
+      redirect: '/art-cate'
+    },
+    {
+      path: '/article/cate',
+      redirect: '/art-cate'
+    },
+    {
+      path: '/article/list',
+      redirect: '/art-list'
+    },
+    {
+      path: '/user',
+      redirect: (to) => {
+        const pathMap = {
+          profile: '/user-info',
+          avatar: '/user-avatar',
+          password: '/user-pwd'
+        }
+
+        return pathMap[to.query.tab] || '/user-info'
+      }
     },
     {
       path: '/login',
