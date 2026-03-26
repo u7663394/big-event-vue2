@@ -1,12 +1,13 @@
 // User 相关 Vuex 模块
-import { getAuthToken, login, register } from '@/api/user'
+import { getAuthToken, getUserInfo, login, register } from '@/api/user'
 import { delToken, getToken, setToken } from '@/utils/storage'
 
 export default {
   namespaced: true,
   state () {
     return {
-      token: getToken() || ''
+      token: getToken() || '',
+      userInfo: {}
     }
   },
   mutations: {
@@ -16,8 +17,12 @@ export default {
       // 2. 存入 localStorage
       setToken(newToken)
     },
+    setUserInfo (state, userInfo) {
+      state.userInfo = userInfo || {}
+    },
     logout (state) {
       state.token = ''
+      state.userInfo = {}
       delToken()
     }
   },
@@ -29,13 +34,17 @@ export default {
       // 1. 发送登陆请求
       const res = await login(form)
       const token = getAuthToken(res)
-
       if (!token) {
         throw new Error('LOGIN_TOKEN_MISSING')
       }
-
       // 2. 调用 mutation 存 token
       context.commit('setUserToken', token)
+    },
+    async getUserInfoAction (context) {
+      const res = await getUserInfo()
+      const userInfo = res.data || res
+      context.commit('setUserInfo', userInfo)
+      return userInfo
     }
   },
   getters: {}

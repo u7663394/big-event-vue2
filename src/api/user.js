@@ -33,3 +33,33 @@ export const login = (form) => {
     password: form.password
   })
 }
+
+// 3. 获取用户基本资料
+export const getUserInfo = () => {
+  return request.get('/my/userinfo')
+}
+
+// 4. 更新用户基本资料
+export const updateUserInfo = (data) => {
+  return request.put('/my/userinfo', {
+    id: data.id,
+    nickname: data.nickname,
+    email: data.email
+  })
+}
+
+// 5. 更新用户头像
+export const updateUserAvatar = (avatar) => {
+  return request.patch('/my/update/avatar', {
+    avatar
+  })
+}
+
+// 6. 更新用户密码
+export const updateUserPassword = (data) => {
+  return request.patch('/my/updatepwd', {
+    old_pwd: data.old_pwd,
+    new_pwd: data.new_pwd,
+    re_pwd: data.re_pwd
+  })
+}
